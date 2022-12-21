@@ -1,345 +1,91 @@
-%\documentclass[10pt]{article}
-\documentclass[12pt]{article}
-% all the packages we will import
-\usepackage[dvipsnames,usenames, table]{xcolor} 
+\documentclass{paper}
+
+
 \usepackage[utf8]{inputenc}
 
 
 
-\usepackage[german]{babel}
-\usepackage[a4paper, margin=1in]{geometry}
-\usepackage{ marvosym }
+\usepackage[english]{babel}
+\usepackage[a4paper, margin=0.8in]{geometry}
 
+\usepackage{parskip}
 
 \usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{amsmath}
 
-%\usepackage{titlesec}
-%\titlespacing*{\section}{0pt}{.3\baselineskip}{.3\baselineskip}
-
-
-\usepackage{tikz}
-\usepackage{mathtools}
-\usepackage{fancyhdr}
-\usepackage{tikz}
-\usepackage{graphicx}
-\usepackage{microtype}
-\usepackage{listings}
-\usepackage[hidelinks]{hyperref}
-\usepackage{tocloft}
-\usepackage{wrapfig}
-\usepackage{parskip}
-
-\usepackage{enumitem}
-\usepackage{wrapfig}
-
-\newcommand{\tocr}{
-	\renewcommand\cftaftertoctitle{\par\noindent\hrulefill\par\vskip-0.65em}
-	\tableofcontents
-	\noindent\hrulefill
-}
-\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
-\renewcommand{\ttdefault}{pcr}
-
-
-
-\usepackage{inconsolata}
-
-\definecolor{background}{HTML}{fcfeff}
-\definecolor{comment}{HTML}{b2979b}
-\definecolor{keywords}{HTML}{255957}
-\definecolor{basicStyle}{HTML}{6C7680}
-\definecolor{variable}{HTML}{001080}
-\definecolor{string}{HTML}{c18100}
-\definecolor{numbers}{HTML}{3f334d}
-\ifx
-\lstset{
-	% How/what to match
-	sensitive=true,
-	% Border (above and below)
-	frame=single,
-	% Extra margin on line (align with paragraph)
-	xleftmargin=\parindent,
-	% Put extra space under caption
-	belowcaptionskip=1\baselineskip,
-	
-	% Break long lines into multiple lines?
-	breaklines=true,
-	% Show a character for spaces?
-	showstringspaces=false,
-	tabsize=2
-}
-\fi
-%END LISTINGDEF
-\lstdefinestyle{lectureNotesListing}{
-	numbers=left,
-	xleftmargin=0.8em, % 2.8 with line numbers
-	breaklines=true,
-	frame=single,
-	framesep=0.6mm,
-	frameround=ffff,
-	framexleftmargin=0.4em, % 2.4 with line numbers | 0.4 without them
-	tabsize=4, %width of tabs
-	aboveskip=1.0em,
-	classoffset=0,
-	sensitive=true,
-	% Colors
-	backgroundcolor=\color{background},
-	basicstyle=\color{basicStyle}\small\ttfamily,
-	keywordstyle=\color{keywords},
-	commentstyle=\color{comment},
-	stringstyle=\color{string},
-	numberstyle=\color{numbers},
-	identifierstyle=\color{variable},
-	showstringspaces=true
-}
-\lstset{style=lectureNotesListing}
-%END LISTINGDEF
 
 
 
 % variables you can adjust
-\newcommand{\titleVar}{Reoptimierung minimaler Hamiltonkreise\\unter Hinzufügen und Entfernen von Knoten
-	\\{\Large \textsc{Thema 16}}
+\newcommand{\titleVar}{\large Seminar Report on\\ \LARGE TCUDB: Accelerating Database with Tensor Processors \\{\large {by Yu-Ching Hu, Yuliang Li, Hung-Wei Tseng}}
 }
 
-\newcommand{\authorVar}{David Zollikofer}
+\newcommand{\authorVar}{David Raphael Zollikofer}
 % end variables you can adjust
 
 
 % last configuration before document starts
 \title{\titleVar}
-\author{\authorVar}
-\date{3. Juni 2020}
+\author{David Raphael Zollikofer\\ ETH Zürich}
+\date{\today}
 
-%making nice headers & footers
-\pagestyle{fancy}
-\fancyhf{}
-\rhead{Algorithmics for Hard Problems - ETHZ}
-\lhead{\authorVar}
-\rfoot{Seite \thepage}
-% ending last configuration
 
+
+\usepackage{mathpazo}
 
 % optional math environments
 
 
 
-
-
-
-
-% theorem
-
-\newtheorem{Theorem}{Theorem}
-
-
-
-\makeatletter
-
-\newenvironment{customTheorem}[1]
-{\count@\c@Theorem
-	\global\c@Theorem#1 %
-	\global\advance\c@Theorem\m@ne
-	\Theorem}
-{\endTheorem
-	\global\c@Theorem\count@}
-
-\makeatother
-
-
-% proposition
-
-
-
-
-\newtheorem{Proposition}{Proposition}
-
-\makeatletter
-
-\newenvironment{customProposition}[1]
-{\count@\c@Proposition
-	\global\c@Proposition#1 %
-	\global\advance\c@Proposition\m@ne
-	\Proposition}
-{\endTheorem
-	\global\c@Proposition\count@}
-
-\makeatother
-
-
-
-
-
-
-
-
-% end optional math environments
-
-
-
-
-
-
-\usepackage[
-backend=biber,
-style=alphabetic,
-sorting=ynt,
-maxbibnames=99
-]{biblatex}
-
-
-%\addbibresource{bibliography.bib}
-\addbibresource{tspApprox.bib}
-\usepackage{mathpazo}
-
-
-
-
-
-% begin custom commands
-\newcommand{\Q}{\mathbb{Q}}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\N}{\mathbb{N}}
-\newcommand{\F}{\mathcal{F}}
-\newcommand{\X}{\mathcal{X}}
-\newcommand{\W}{\mathcal{W}}
-\newcommand{\Var}{\operatorname{Var}}
-\newcommand{\E}{\operatorname{E}}
-%\newcommand{\exp}{\operatorname{exp}}
-\newcommand{\MinTSP}{\textit{MinTSP} }
-\newcommand{\MaxTSP}{\textit{MaxTSP} }
-\newcommand{\argmin}{\operatorname{argmin} }
-\newcommand{\argmax}{\operatorname{argmax} }
-\newcommand{\argopt}{\operatorname{argopt} }
-
-% fancy theorems
-\usepackage[framemethod=TikZ]{mdframed}
-
-\ifx
-\newenvironment{thm}[2][]{\begin{mdframed}[backgroundcolor=blue!10, nobreak=true]
-		\textbf{#1 }
-	}
-	{ 
-	\end{mdframed}
-}\fi
-
-
-\newenvironment{definition}[3][]{
-	\textbf{Definition #2} (\textit{#1})
-}
-{
-}
-
-
-\usepackage{multicol}
-
-
-%   \renewcommand*{\proofname}{Beweisskizze}
-\addto\languagegerman{\renewcommand\proofname{Beweisskizze}}
-
-%\setlength{\parskip}{0.35\baselineskip}
-
 \begin{document}
 	
+\twocolumn[\maketitle 
+\hrule 
+
+\begin{abstract} advances in hardware such as cuda have enabled plenty of new applications (cite deep learning). This report will show how these new accelerators can be used .. based on the paper ... . This approach will be compared to other literature in the area. A thorough .. of the proposed methods performance will be given as well as highlight the methods problems. \end{abstract}
+
+\hrule\bigskip
+]
+
 	
-	\maketitle
+	\section{Introduction}
+	Goal of using tensors, how tensors work 
+	
+	\section{Using Tensor Cores to Accelerate Databases}
+	\subsection{The Tensor Abstraction}
+	
+	\subsection{Mapping Database Operators to Tensor Operations}
+	
+	\subsection{End-to-End Pipeline}
+	
+	\section{Comparison to Related Work}
+	
+	\cite{he2022query}lol \cite{hu2021tcudb}
+	  \cite{sun_2022}
+	if we use tensors we must use 
+	
+	\section{Performance Evaluation}
+	
+	clearly good on ...
+	
+	very expected
+	
+	\section{Shortcomings}
+	
+	monetDB is super old, why not compared to Vectorwise, questionable 
+	
+	TPC-H benchmark like others
+	
+	clearly inefficient? 
+	
+	how many runs, average?
 	
 	
-	\thispagestyle{fancy}
+	\section{Conclusion}
 	
-	%\begin{multicols}{2}
+\bibliographystyle{plain}
+\bibliography{bibliography}
 	
-	
-	
-	\section*{Einführung und erforderlicher Hintergrund}
-	Beim Handlungsreisendenproblem (TSP) möchten wir auf einer Instanz $I_{n} = (K_{n},d)$, bestehend aus $K_n$ dem vollständigen Graphen mit $n$ Knoten, sowie $d$ einer Distanzfunktion, eine Hamiltontour minimalen Gewichtes finden (auch genannt \textit{optimal}). Wenn die Dreiecksungleichung für $d$ gilt\footnote{$d(v_i,v_j)\leq d(v_i,v_k) + d(v_k,v_j)$ für alle $v_i,v_j$ in $V$. }, nennt man das TSP metrisch.
-	
-	Da das TSP $NP$-schwer ist \cite{cormen_introduction_2009} besteht ein grosses Interesse an approximativen Lösungen. Die beste  deterministische polynomielle Approximation für das metrische TSP bietet Christofides Algorithmus mit einer Approximationsgüte von $\frac{3}{2}$ \cite{golovnev_cccomplexity_2019}. Für das generelle TSP hingegen existiert keine polynomielle Approximation beliebiger Güte unter der Annahme $P\not = NP$ \cite{golovnev_cccomplexity_2019}.
-	
-	Angenommen wir haben eine Instanz $I_n$ eines TSP sowie eine optimale Tour minimalen Gewichtes $T_n^*$ auf dieser Instanz bereits gegeben und möchten einen Knoten $v_{n+1}$ dieser Instanz hinzufügen. Formal ausgedrückt möchten wir $I_n$ auf $I_{n+1}$ erweitern, wobei $I_n$ eine Subinstanz von $I_{n+1}$ ist ohne den Knoten $v_{n+1}$ sowie assoziierten Kanten. Wir möchten eine möglichst gute Hamiltontour $T_{n+1}$ in polynomieller Zeit auf $I_{n+1}$ finden und dabei nutzen, dass wir bereits eine optimale Tour $T_n^*$ für $I_{n}$ kennen. Dieses Problem nennen wir das \textbf{MinTSP+} Problem.
-	
-	Generell unterscheiden wir die folgenden Approximationsprobleme:
-	
-	\begin{itemize}[leftmargin=1in]
-		\item[\textbf{MinTSP+}] Wir fügen einer optimalen Lösung $T_{n}^*$ auf $I_n$ einen Knoten $v_{n+1}$ hinzu und bauen eine möglichst optimale Tour $T_{n+1}$ auf $I_{n+1}$.
-		\item [\textbf{MinTSP+k}] Wir fügen einer optimalen Lösung $T_n^*$ auf $I_n$ $k$ Knoten $\{v_{n+1},\ldots,v_{n+k}\}$ hinzu und bauen eine möglichst optimale Tour $T_{n+k}$ auf $I_{n+k}$.
-		\item [\textbf{MinTSP-}] Wir entfernen einer optimalen Lösung $T_{n+1}^*$ auf $I_{n+1}$ einen Knoten $v_{n+1}$ und bauen eine möglichst optimale Tour $T_n$ auf $I_n$. 
-	\end{itemize}
-	
-	Um einen Knoten $v_{n+1}$ in eine bestehende Tour einzufügen nutzen wir die \textit{nearest Insertion} Regel:
-	\begin{itemize}[leftmargin=1.45in]
-		\item[\textbf{Nearest Insertion}] Um ein Knoten $v_{n+1}$ mittels der \textit{nearest Insertion} Regel in eine Tour $T_n$ einzufügen, finden wir den Knoten $v_{i^*}$ in $T_{n}$, der am nächsten zu $v_{n+1}$ ist, d.h.  $v_{i^*} := \argmin_{v_i \in T_n} \{ d(v_i,v_{n+1})\}$
-	\end{itemize}
-	
-	
-	
-	
-	
-	\section*{Knoten hinzufügen: MinTSP+ Approximation}
-	
-	Möchten wir einer Instanz $I_n$ einen Knoten $v_{n+1}$ hinzufügen, wissen wir, dass wir auf der Instanz $I_{n+1}$ eine $\frac{3}{2}$ Approximation mit Christofides Algorithmus berechnen können. Wenn wir nun aber bereits eine optimale Lösung $T_n^*$ auf $I_n$ kennen, so erlauben uns die Resultate in \cite{ausiello_reoptimization_2006} eine wesentlich bessere Approximation für das MinTSP+ Problem zu geben.
-	
-	\begin{customTheorem}{1}
-		Im metrischen Fall ist MinTSP+ polynomiell $\frac{4}{3}$-approximierbar.
-	\end{customTheorem}
-	
-	\textit{Beweisskizze.} Der Beweis besteht aus drei verschiedenen Teilen. Als erstes bauen wir uns eine Tour $T_1$ mittels \textit{nearest Insertion} von $v_{n+1}$ in die Tour $T_n^*$. Für die Tour $T_1$ gilt dann $d(T_1) \leq d(T_{n}^*) + 2\min_{i\in\{1,\ldots,n\}}\{d(v_i,v_{n+1})\}$.
-	
-	Da sicherlich $d(T_n^*) \leq d(T_{n+1}^*)$, sowie wenn $j,l$ die Nachbarn von $v_{n+1}$ in $T_{n+1}^*$\footnote{$T_{n+1}^*$ ist eine optimale Lösung auf $I_{n+1}$} sind auch $\min_{i\in\{1,\ldots,n\}}\{d(v_i,v_{n+1})\} \leq  \max\{d(v_j,v_{n+1}),d(v_l,v_{n+1})\}$ gilt, folgt daraus  $d(T_1) \leq d(T_{n+1}^*) + 2\max\{d(v_j,v_{n+1}),d(v_l,v_{n+1})\}$.
-	
-	Als zweiten Schritt wenden wir Christofides Algorithmus auf die Instanz $I_{n+1}$ an und bauen uns eine Tour $T_2$ mit  $d(T_2) \leq \frac{3}{2}d(T_{n+1}^*)-\max\{d(v_j,v_{n+1}),d(v_l,v_{n+1})\}$.
-	
-	Wenn wir nun die kürzere Tour von $T_1,T_2$ als $T$ wählen und zweimal die Abschätzung durch Christofides zur Abschätzung durch \textit{nearest Insertion} addieren, erhalten wir nach Vereinfachen die Abschätzung $d(T) \leq \frac{4}{3}d(T_{n+1}^*)$ wie gewünscht. \qed
-	
-	Nun stellt sich die Frage, ob sich Theorem 1 auf mehr als einen zusätzlichen Knoten verallgemeinern lässt:
-	
-	\begin{customTheorem}{2}
-		Im metrischen Fall ist MinTSP+k polynomiell  $\left(\frac{3}{2} - \frac{1}{4k+2}\right)$-approximierbar.
-	\end{customTheorem}
-	
-	\textit{Beweisskizze.} Der Beweis wird analog zum Beweis von Theorem 1 in drei Schritten geführt. Jedoch fügen wir die $k$ Knoten nach einer Priorisierungsregel ein: Wir teilen dazu die Knoten von $I_{n+k}$ auf in $S$, bestehend aus den $n$ Knoten für die wir bereits eine Tour haben und $P$, bestehend aus $k$ Knoten, die wir noch hinzufügen müssen. 
-	
-	Wir fügen iterativ immer den Knoten $v_p$ aus $P$ einer Tour $T_1$ hinzu (wobei am Anfang $T_1 = T_n^*$ gilt) welcher am nächsten zu einem Knoten $v_s$ aus $S$ ist. Wir suchen demnach die kleinste Distanz zwischen zwei Knoten, die $S$ und $P$ verbindet. Sei $d(v_s,v_p)$ diese Distanz, dann gilt  $d(v_s,v_p) \leq d_{max}(T_{n+k}^*)$, welches uns das Gewicht der längsten Kante in einer optimalen Tour auf $I_{n+k}$ gibt\footnote{Da $T_{n+k}^*$ auch $S$ und $T$ verbinden muss, ist die längste Kante dieser Tour sicherlich länger als die kürzeste Verbindung zwischen $S$ und $T$.}. Nun verbinden wir $v_p$ mit $v_s$ und binden $v_p$ so in die Tour $T_1$ ein, dabei kürzen wir die Tour natürlich ab falls möglich. Gleichzeitig entfernen wir $v_p$ aus $P$ und fügen $v_p$ in $S$ ein.
-	
-	Fügen wir nun alle $k$ Knoten iterativ in die Tour ein bis $P$ leer ist, so haben wir die ursprüngliche Tour $T_n^*$ um maximal $2k d_{max}(T_{n+k}^*)$ verlängert. Es gilt dabei $d(T_1) \leq d(T_n^*) + 2k d_{max}(T_{n+k}^*) \leq d(T_{n+1}^*) + 2k d_{max}(T_{n+k}^*)$ wegen der $\Delta$-Ungleichung.
-	
-	Addieren wir nun beide Abschätzungen passend und wählen wir die kürzere Tour beider Abschätzungen als $T$, so gilt $d(T) \leq\left( \frac{3}{2} - \frac{1}{4k+2}\right)d(T_{n+k}^*)$ wie gewünscht. Nicht überraschend gilt $\lim_{k\to\infty} \left( \frac{3}{2} - \frac{1}{4k+2}\right) = \frac{3}{2} $ was genau der Approximationsgüte von Christofides Algorithmus entspricht. \qed
-	
-	\section*{Knoten entfernen: MinTSP- Approximation}
-	Neben dem Hinzufügen von Knoten auf metrischen Instanzen möchte wir noch die polynomielle Nichtapproximierbarkeit des allgemeinen MinTSP- Problems zeigen. Dafür werden wir folgendes Lemma benutzen:
-	
-	\textbf{Lemma.} (\textsc{HPathToHTour} \cite{garey_computers_1990})
-	Sei $G = [V,E]$ ein Graph mit Hamiltonpfad $P$ von $a$ nach $b$ in $G$. Herauszufinden ob $G$ einen Hamiltonkreis hat ist $NP$-schwer. 
-	
-	\begin{customTheorem}{3}
-		Im generellen Fall ist MinTSP- polynomiell nicht $2^n$-approximierbar unter der Annahme $P \neq NP$.
-	\end{customTheorem}
-	
-	\textit{Beweisskizze.}
-	Wir reduzieren eine Instanz $(G,a,b)$ von \textsc{HPathToHTour} auf eine Instanz $I_{n+1}$ von MinTSP-. Dabei verbinden wir $a,b$ von $G$ mit einem neuen Knoten $v_{n+1}$ und geben allen Kanten die wir bis jetzt haben das Gewicht $1$. Nun ergänzen wir den Graphen mit den fehlenden Kanten mit Gewicht $2^n n +1$ um den vollständigen Graphen $K_{n+1}$ zu erhalten.
-	
-	Angenommen es gibt eine polynomielle $2^n$-Approximation des generellen MinTSP-, so können wir eine Tour $T$ bauen, welche $d(T_n^*) \leq d(T) \leq 2^n d(T_n^*)$ erfüllt. Wir bemerken, dass per Konstruktion $d(T_n^*) = n$, falls $G$ einen Hamiltonkreis hat und $d(T_n^*) = 2^n n + n$, falls nicht. Wenn nun $d(T) \leq 2^n n$ so muss $G$ einen Hamiltonkreis haben, während bei $2^n n + n \leq d(T)$ $G$ keinen Hamiltonkreis haben kann. Somit können wir das Entscheidungsproblem \textsc{HPathToHTour} von $G$ in Polynomialzeit lösen.
-	
-	Da wir $N\neq NP$ voraussetzten und \textsc{HPathToHTour} $NP$-schwer ist, widerspricht dies der Existenz eines $2^n$-Approximationsalgorithmus für das allgemeine MinTSP-. \qed
-	
-	\section*{Zusammenfassung}
-	
-	Reoptimierung des TSP Problems um Knoten hinzuzufügen oder zu entfernen liefert nicht direkt bessere Schranken, als das ganze Problem mit Christofides Algorithmus zu lösen. Die Kombination der Reoptimierung und von Christofides Algorithmus hingegen erlauben es, aufgrund der unterschiedlichen Faktoren in den Abschätzungen diese zu kombinieren, so dass eine wesentlich bessere Schranke entsteht als bisher bekannt war.
-	
-	Desweiteren ist die polynomielle Reoptimierung des nicht metrischen MinTSP- Problems genau so unmöglich wie eine generelle polynomielle Approximation für das allgemeine TSP Problem. Dies zeigten wir mittels einer Polynomialzeitreduktion bei welcher wir den Approximationsfaktor $2^n$ fest in die Reduktion eingebaut haben. Dies erlaubt die Existenz eines $2^n$-Polynomialzeitapproximationsalgorithmus auszuschliessen.
-	
-	Unbeantwortet lässt das Papier wie es bezüglich der Approximierbarkeit des metrischen MinTSP- sowie \mbox{MinTSP-k} Problemes aussieht, bei welchem wir einen beziehungsweise $k$ Knoten entfernen. Jedoch dürften dort die Ungleichungen einiges schwieriger herzuleiten sein, da man nicht schön $T_n^*$ durch $T_{n+1}^*$ nach oben Abschätzen kann was bei unseren Beweisen zentral war.
-	
-	Die Autoren vermuten zudem, dass sich für das metrische MinTSP+ Problem kein PTAS finden lässt.
-	
-	\printbibliography
-	
-	%{\AtNextBibliography{\footnotesize}
-		%\printbibliography
-		%}
-	
+
 \end{document}
-
-
