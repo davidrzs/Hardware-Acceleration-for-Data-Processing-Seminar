@@ -13,6 +13,7 @@
 \usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{amsmath}
+\usepackage{blkarray}
 
 \usepackage{float}
 \usepackage{graphicx} 
@@ -62,8 +63,65 @@ The introduction of Tensor Cores for NVIDIA GPUs has resulted significant speed 
 	
 	The paper \cite{hu2021tcudb} treats this transformation rather theoretical; instead of a full theoretical treatment we follow an example driven presentation here.
 	
-	Assume we are given 
+	\paragraph{Tables to Tensors}
 	
+	\begin{figure}
+	\centering
+	\includegraphics[width=0.9\linewidth]{schema1}
+	\caption{Example Database. Arrows indicate foreign key relation.}
+	\label{fig:schema1}
+	\end{figure}
+
+
+	Assume we are given a database as illustrated in Figure \ref{fig:schema1}. Assuming we would want to join \texttt{professors} and \texttt{theses} on \texttt{professors.id = theses.professor\_id}. We now construct the matrix \texttt{mat(professors)}.
+	
+	For every row in the professors table we have a row in our \texttt{mat(professors)}, we use the columns to one-hot encode the attribute we are joining on. In this case the attributes are \texttt{id} which can take values in $\{a,b,c\}$, hence we have three columns.
+	\begin{align*}\texttt{mat(professors)} &= 
+	\begin{blockarray}{cccc}
+	& a & b & c \\
+	\begin{block}{c(ccc)}
+		\text{Row 1} & 1 & 0 & 0 \\
+		\text{Row 2} & 0 & 1 & 0 \\
+		\text{Row 3} & 0 & 0 & 1 \\
+	\end{block}
+\end{blockarray}
+	\end{align*}
+Likewise \texttt{mat(theses)} is constructed analogously:
+\begin{align*}\texttt{mat(theses)} &= 
+		\begin{blockarray}{cccc}
+			& a & b & c \\
+			\begin{block}{c(ccc)}
+				\text{Row 1} & 0 & 1 & 0 \\
+				\text{Row 2} & 1 & 0 & 0 \\
+				\text{Row 3} & 0 & 0 & 1 \\
+				\text{Row 4} & 1 & 0 & 0 \\
+			\end{block}
+		\end{blockarray}
+\end{align*}
+Note that these matrices \texttt{mat(theses)} and \texttt{mat(professors)} look different depending on which column we are focusing on, in this case the professor ids.
+	
+	\paragraph{Operators as Tensor Operations}
+	
+	If we now want to perform \texttt{theses $\Join$ professors} we can simply perform $\texttt{mat(theses)} \cdot \texttt{mat(professors)}^T$ which yields 
+\begin{align*} C&=
+	\begin{blockarray}{cccc} 
+		& \text{Col 1} & \text{Col 2} & \text{Col 3} \\
+		\begin{block}{c(ccc)}
+			\text{Row 1} & 0 & 1 & 0 \\
+			\text{Row 2} & 1 & 0 & 0 \\
+			\text{Row 3} & 0 & 0 & 1 \\
+			\text{Row 4} & 1 & 0 & 0 \\
+		\end{block}
+	\end{blockarray}
+\end{align*}	
+By design of our matrix multiplication (which can be performed on the tensor core) whenever an entry \texttt{C[i,j] > 0} this means that the $i$-th row from the thesis table is to be joined with the $j$-th row from the professors table.
+
+Unfortunately the above contruction does not allow operator chaining but we must first maerialize the new join table from the matrix $C$ above.
+
+The same construction also allows reduction operations such as \texttt{SUM, COUNT, AVG}, these work by suitable multiplying $C$ with $\vec{1}$ from the left.
+
+Although this discussion leaves out quite a few constructs it does convey the idea behind mapping database operations to tensor operations as introduced in the TCUDB paper.
+
 	\subsection{End-to-End Pipeline}
 	
 	Running computations on tensor cores does not come without cost, from data movement and transformation over to precision constraints, present challenges for a competitive database system. In TCUDB the authors acknowledge these limitations of tensor core based processing and present a workflow as depicted in Figure \ref{fig:pipeline}.
