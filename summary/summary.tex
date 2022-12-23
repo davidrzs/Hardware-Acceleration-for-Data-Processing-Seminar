@@ -40,54 +40,56 @@
 
 \begin{document}
 	
-\twocolumn[\maketitle 
-\hrule 
-
-\begin{abstract}Recent advances in hardware accelerators for matrix multiplications have massively sped up deep learning workflows. In this seminar report we will outline how NVIDIAs Tensor Cores can be used to speed up database workloads; for this we will take a close look at the framework presented in \cite{hu2021tcudb}, analyze it, compare it to other relevant literature \cite{he2022query}. Last but not least we will also highlight shortcomings of the presented approaches and give a short outlook.
-\end{abstract}
-
-\hrule\bigskip
-]
-
+	\twocolumn[\maketitle 
+	\hrule 
 	
-
-\section{Introduction}
-The introduction of Tensor Cores for NVIDIA GPUs has resulted significant speed improvements for matrix multiplication heavy workflows \cite{markidis2018nvidia}. Although primarily used for deep learning thanks their CUDA API they can easily be employed for a plethora of different applications. The paper "Accelerating Database with Tensor Processors" by Yu-Ching Hu, Yuliang Li, Hung-Wei Tseng \cite{hu2021tcudb} presents a novel framework to use Tensor Cores for database acceleration.
+	\begin{abstract}Recent advances in hardware accelerators for matrix multiplications have massively sped-up deep learning workflows. In this seminar report we will outline how NVIDIA's tensor cores can be used to speed up database workloads; for this we will take a close look at the framework presented in the paper "TCUDB: Accelerating Database with Tensor Processors"\cite{hu2021tcudb}, analyze it and compare it to other relevant literature. Last but not least we will also highlight shortcomings of the presented approaches and add concluding remarks.
+	\end{abstract}
+	
+	\hrule\bigskip
+	]
+	
+	
+	
+	\section{Introduction}
+	The introduction of tensor cores for NVIDIA GPUs has resulted in significant speed improvements for matrix multiplication heavy workflows \cite{markidis2018nvidia}. Although primarily used for deep learning, thanks to their CUDA API, they can easily be employed for a plethora of different applications. The paper "Accelerating Database with Tensor Processors" by Yu-Ching Hu, Yuliang Li, Hung-Wei Tseng \cite{hu2021tcudb} presents a novel framework to use tensor cores for database acceleration.
 	
 	\section{Using Tensor Cores to Accelerate Databases}
 	
 	\subsection{The Tensor Abstraction}
-	Databases inherently being very flexible in the data they represent. Matrices as used by the Tensor Cores on NVIDIA GPUs however have are limited to 16-bit floating point precision. A key challenge is mapping database primitives as well as operators to these tensors.
+	Databases by design are very flexible in the data they represent. Matrices on the other hand, as used by the tensor cores on NVIDIA GPUs, are limited to 16-bit precision floating point numbers. A key challenge is mapping database tables as well as their operators to tensor based primitives.
 	
 	\subsection{Mapping Database Operators to Tensor Operations} \label{sec:map}
 	
-	The paper \cite{hu2021tcudb} treats this transformation rather theoretical; instead of a full theoretical treatment we follow an example driven presentation here.
+	The paper \cite{hu2021tcudb} treats this transformation rather theoretical; instead of a full theoretical treatment, we follow an example driven presentation here.
 	
 	\paragraph{Tables to Tensors}
 	
 	\begin{figure}
-	\centering
-	\includegraphics[width=0.9\linewidth]{schema1}
-	\caption{Example Database. Arrows indicate foreign key relation.}
-	\label{fig:schema1}
+		\centering
+		\includegraphics[width=0.9\linewidth]{schema1}
+		\caption{Example Database. Arrows indicate foreign key relation.}
+		\label{fig:schema1}
 	\end{figure}
-
-
-	Assume we are given a database as illustrated in Figure \ref{fig:schema1}. Assuming we would want to join \texttt{professors} and \texttt{theses} on \texttt{professors.id = theses.professor\_id}. We now construct the matrix \texttt{mat(professors)}.
 	
-	For every row in the professors table we have a row in our \texttt{mat(professors)}, we use the columns to one-hot encode the attribute we are joining on. In this case the attributes are \texttt{id} which can take values in $\{a,b,c\}$, hence we have three columns.
+	
+	Assume we are given a database as illustrated in Figure \ref{fig:schema1}. If we wanted to join \texttt{professors} and \texttt{theses} on \texttt{professors.id = theses.professor\_id} we would first construct two matrices, \texttt{mat(professors)} for the professors and \texttt{mat(theses)} for the theses.   
+	
+	Let us first construct the matrix \texttt{mat(professors)}.
+	
+	For every row in the professors' table we have a row in our \texttt{mat(professors)}, we use the columns to one-hot encode the attribute we are joining on. In this case the attributes are \texttt{id} which can take values in $\{a,b,c\}$, hence we have three columns. The $1$ in the first row and first column means that the first entry in the table features $a$ in its ID field.
 	\begin{align*}\texttt{mat(professors)} &= 
-	\begin{blockarray}{cccc}
-	& a & b & c \\
-	\begin{block}{c(ccc)}
-		\text{Row 1} & 1 & 0 & 0 \\
-		\text{Row 2} & 0 & 1 & 0 \\
-		\text{Row 3} & 0 & 0 & 1 \\
-	\end{block}
-\end{blockarray}
+		\begin{blockarray}{cccc}
+			& a & b & c \\
+			\begin{block}{c(ccc)}
+				\text{Row 1} & 1 & 0 & 0 \\
+				\text{Row 2} & 0 & 1 & 0 \\
+				\text{Row 3} & 0 & 0 & 1 \\
+			\end{block}
+		\end{blockarray}
 	\end{align*}
-Likewise \texttt{mat(theses)} is constructed analogously:
-\begin{align*}\texttt{mat(theses)} &= 
+	Likewise \texttt{mat(theses)} is constructed analogously:
+	\begin{align*}\texttt{mat(theses)} &= 
 		\begin{blockarray}{cccc}
 			& a & b & c \\
 			\begin{block}{c(ccc)}
@@ -97,40 +99,40 @@ Likewise \texttt{mat(theses)} is constructed analogously:
 				\text{Row 4} & 1 & 0 & 0 \\
 			\end{block}
 		\end{blockarray}
-\end{align*}
-Note that these matrices \texttt{mat(theses)} and \texttt{mat(professors)} look different depending on which column we are focusing on, in this case the professor ids.
+	\end{align*}
+	Note that these matrices \texttt{mat(theses)} and \texttt{mat(professors)} look different depending on which column we are focusing on, in this case the professor ids.
 	
 	\paragraph{Operators as Tensor Operations}
 	
-	If we now want to perform \texttt{theses $\Join$ professors} we can simply perform $\texttt{mat(theses)} \cdot \texttt{mat(professors)}^T$ which yields 
-\begin{align*} C&=
-	\begin{blockarray}{cccc} 
-		& \text{Col 1} & \text{Col 2} & \text{Col 3} \\
-		\begin{block}{c(ccc)}
-			\text{Row 1} & 0 & 1 & 0 \\
-			\text{Row 2} & 1 & 0 & 0 \\
-			\text{Row 3} & 0 & 0 & 1 \\
-			\text{Row 4} & 1 & 0 & 0 \\
-		\end{block}
-	\end{blockarray}
-\end{align*}	
-By design of our matrix multiplication (which can be performed on the tensor core) whenever an entry \texttt{C[i,j] > 0} this means that the $i$-th row from the thesis table is to be joined with the $j$-th row from the professors table.
-
-Unfortunately the above contruction does not allow operator chaining but we must first maerialize the new join table from the matrix $C$ above.
-
-The same construction also allows reduction operations such as \texttt{SUM, COUNT, AVG}, these work by suitable multiplying $C$ with $\vec{1}$ from the left.
-
-Although this discussion leaves out quite a few constructs it does convey the idea behind mapping database operations to tensor operations as introduced in the TCUDB paper.
-
+	If we now perform the join \texttt{theses $\Join$ professors} we can simply perform $\texttt{mat(theses)} \cdot \texttt{mat(professors)}^T$ which yields 
+	\begin{align*} C&=
+		\begin{blockarray}{cccc} 
+			& \text{Col 1} & \text{Col 2} & \text{Col 3} \\
+			\begin{block}{c(ccc)}
+				\text{Row 1} & 0 & 1 & 0 \\
+				\text{Row 2} & 1 & 0 & 0 \\
+				\text{Row 3} & 0 & 0 & 1 \\
+				\text{Row 4} & 1 & 0 & 0 \\
+			\end{block}
+		\end{blockarray}
+	\end{align*}	
+	By design of our matrix multiplication (which can be performed on the tensor core) whenever an entry \allowbreak \texttt{C[i,j] > 0} this means that the $i$-th row from the thesis table is to be joined with the $j$-th row from the professors table.
+	
+	Unfortunately, the above construction does not allow operator chaining, but we must first materialize the new join table from the matrix $C$ above.
+	
+	The same construction also allows reduction operations such as \texttt{SUM, COUNT, AVG}, these work by suitable multiplying $C$ with $\vec{1}$ from the left.
+	
+	Although this discussion leaves out quite a few constructs, it does convey the idea behind mapping \allowbreak database operations to tensor operations, as introduced in the TCUDB paper.
+	
 	\subsection{End-to-End Pipeline}
 	
-	Running computations on tensor cores does not come without cost, from data movement and transformation over to precision constraints, present challenges for a competitive database system. In TCUDB the authors acknowledge these limitations of tensor core based processing and present a workflow as depicted in Figure \ref{fig:pipeline}.
-
-	First the query is analyzed \Circled{1} and it is pattern matched whether it contains operators which can be accelerated using the presented approach. Whenever this or one of the following test fails, TCUDB resorts to standard processing not using tensor cores. In \Circled{2} TCUDB checks wether the data as well as results will fit into the limited precision. To perform this analysis TCUDB stores minimum, maximum and mean values for any table columns.
+	Running computations on tensor cores does not come without cost, from data movement and transformation over to precision constraints, present challenges for a competitive database system. In TCUDB the authors acknowledge these limitations of tensor core \allowbreak based processing and present a workflow as depicted in Figure \ref{fig:pipeline}.
 	
-	As the presented transformation results in sparse matrices if there are many distinct entries in a table column TCUDB decides in \Circled{3} if a sparse or dense matrix multiplication should be used. As GPU memory is limited TCUDB also needs to ensure that \Circled{4} the desired operation fits into GPU memory.
+	First the query is analyzed \Circled{1} and is pattern matched whether it contains operators which can be accelerated using the presented approach. Whenever this or one of the following test fails, TCUDB resorts to standard processing not using tensor cores. In \Circled{2} TCUDB checks wether the data as well as results will fit into the limited precision. To perform this analysis, TCUDB stores minimum, maximum, and mean values for any table columns.
 	
-	In order to perform the presented tensor operations in Section \ref{sec:map} we need to transform the data which comes at a cost - if the transformation cost outweighs the tensor core benefit \Circled{5} we resort to traditional processing. Last but not least, assuming we do use tensor cores we must decide \Circled{6} wether to transform the data on the GPU or CPU.
+	As the presented transformation results in sparse matrices if there are many distinct entries in a table column, TCUDB decides in \Circled{3} if a sparse or dense matrix multiplication should be used. As GPU memory is limited, TCUDB also needs to ensure that \Circled{4} the desired operation fits into GPU memory.
+	
+	In order to perform the presented tensor operations of Section \ref{sec:map} we first need to transform the data, which comes at a cost - if the transformation cost outweighs the tensor core benefit \Circled{5} we resort to traditional processing. Last but not least, assuming we do use tensor cores, we must decide \Circled{6} whether to transform the data on the GPU or CPU.
 	
 	\begin{figure}
 		\centering
@@ -139,22 +141,22 @@ Although this discussion leaves out quite a few constructs it does convey the id
 		\label{fig:pipeline}
 	\end{figure}
 	
-	We note that many of these steps require some thresholds to be set. To overcome this, TCUDB performs a sampling process during which it runs predetermined queries and analyzes its runtimes in order to find these thresholds.
+	We note that many of these steps require some thresholds to be set (e.g. when to use a sparse representation). To overcome this, TCUDB performs a sampling process during set-up running predetermined queries and analyzing their runtimes in order to find these thresholds.
 	
 	\section{Comparison to Related Work} \label{sec:rel_work}
-	As tensor processors are quite a new development there is little other literature to compare the "Accelerating Database with Tensor Processors" paper to. 
+	As tensor processors are quite a new development, there is little other literature to compare the "Accelerating Database with Tensor Processors" paper to. 
 	
 	The authors of TCUDB have chosen to compare their approach to MonetDB, a commercial column-based database primarily used for data warehousing, as well as  Yinyang DB \cite{yuan2013yin}, a database acceleration framework using CUDA cores aimed at data warehousing workloads. 
 	
-	Although these approaches are used as a benchmark for TCUDB they do not use tensor cores and are hence further discussed in Section \ref{sec:perf_eval} on performance evaluation.
+	Although these approaches are used as a benchmark for TCUDB they do not use tensor cores and are hence further treated in Section \ref{sec:perf_eval} on performance evaluation.
 	
-	A paper also using Tensor Cores for database acceleration is "Query Processing on Tensor Computation Runtimes" (TQP) \cite{he2022query} by He et al. which was released about half a year after TCUDB. The following presentation on TQP is based on slides by Yuxin Sun \cite{sun_2022} and the original paper.
+	A paper also using tensor cores for database acceleration is "Query Processing on Tensor Computation Runtimes" (TQP) \cite{he2022query} by He et al. which was released about half a year after TCUDB. The following presentation on TQP is based on slides by Yuxin Sun \cite{sun_2022} and the original paper.
 	
 	\subsection{TQP}
 	
 	\subsubsection{Data-Tensor Abstraction}
 	
-	TQP takes a different approach to TCUDB as to how the database operations are mapped to tensors. Unlike forming one-hot encoded columns TQP maps the database table rows to matrix rows where each datatype takes a predefined number of columns needed to encode the data it contains. Dates can be mapped to a 16-bit floating point value representing nanoseconds passed since a given starting points; integers are directly encoded in a single matrix cell, on the other hand complex constructs such as strings are split into different characters each encoded in an integer. This means that the encoded string fields have to be as long as the longest string in the database table. This process is shown in Figure \ref{fig:otherpaper}.
+	TQP takes a different approach than TCUDB as to how the database operations are mapped to tensors. Unlike forming one-hot encoded columns, TQP maps the database table rows to matrix rows where each datatype takes a predefined number of columns needed to encode the data it contains. Dates can be mapped to a 16-bit floating point value representing nanoseconds passed since a given starting points, integers are directly encoded in a single matrix cell, on the other hand, complex constructs such as strings are split into different characters, each encoded with a numeric value. This means that the encoded string fields have to be as long as the longest string in the database table. This process is shown in Figure \ref{fig:otherpaper}.
 	
 	
 	\begin{figure}
@@ -163,41 +165,40 @@ Although this discussion leaves out quite a few constructs it does convey the id
 		\caption{TQP represents input tables in a columnar format with a 2d-tensor per column. Figure and caption from \cite{he2022query}.}
 		\label{fig:otherpaper}
 	\end{figure}
-
-\subsubsection{Query Implementation}
+	
+	\subsubsection{Query Implementation}
 	
 	Unlike the query pattern matching found in TCUDB, the TQP paper presents a multilevel compilation hierarchy: A supplied SQL query is first compiled to an intermediate representation used for optimization before being compiled to a tree of tensor operations that can be mapped to a supported backend (ONNX, TVM, PyTorch, TorchScript).
 	
-	The chosen data representation format means that the the operators introduced in TCUDB do not work in TQP. The TQP authors show how traditional database algorithms such as sort based joins can be mapped to tensor operators. 
+	The chosen data representation format means that the operators introduced in TCUDB do not work in TQP. The TQP authors show how traditional database algorithms such as sort based joins can be mapped to tensor operators. 
 	
 	We will take a look at two examples:
 	
-	\paragraph{Filtering}
-	Simple filtering can be achieved using a bitmap operation. For this a tensor operation comparing given attributes sets a bitmap. In a second step the bitmap is used as a mask in a tensor masked-selection operation. 
-
+	\paragraph{Filtering}	Simple filtering can be achieved using a \allowbreak bitmap operation. For this, a tensor operation comparing given attributes sets a bitmap. In a second step, the bitmap is used as a mask in a tensor masked-selection operation. 
+	
 	\paragraph{Joins}
 	
-	The paper presents a sort and hash based join; both work similar to their CPU counterparts. We note that as they do not directly invoke any calls to tensor cores but rather delegate this to the underlying framework. It is unclear wether the join is fully performed on the tensor core compared to TCUDB as operations such as \texttt{torch.sort} might not use a tensor core backend but run on CUDA cores.
+	The paper presents a sort and hash based join; both work similar to their CPU counterparts. We note that as they do not directly invoke any calls to tensor cores but rather delegate this to the underlying framework. It is unclear whether the join is fully performed on the tensor core compared to TCUDB as operations such as \texttt{torch.sort} might not use a tensor core backend but run on CUDA cores.
 	
 	\subsection{Concluding Remarks on Related Work}
 	
-	TCUDB presents one of the first methods for using Tensors Cores in database workloads and presents novel approaches for modeling query operators as matrix multiplications, whereas related work focuses on using established algorithms (sort-based joins etc.) on CUDA \cite{yuan2013yin} or Tensor Cores \cite{he2022query}. Although TQP provides a different approach on using tensor cores 
+	TCUDB presents one of the first methods for using tensors cores in database workloads and presents \allowbreak novel approaches for modeling query operators as matrix multiplications, whereas related work focuses on using established algorithms (sort-based joins etc.) on CUDA \cite{yuan2013yin} or tensor cores \cite{he2022query}.
 	
 	\section{Performance Evaluation} \label{sec:perf_eval}
-	In this section we will comment on the presented performance evaluations.
-
+	In this section, we will comment on the performance evaluations presented in \cite{hu2021tcudb}.
+	
 	\subsection{Synthetic Benchmarks}
 	
 	First, we will look at a synthetic performance evaluation running the following snippet on a database of $x$ rows with $y$ distinct attributes per column.
 	\begin{verbatim}
-SELECT SUM(A.VAL), B.VAL
-FROM A, B WHERE A.ID = B.ID
-GROUP BY B.VAL
+		SELECT SUM(A.VAL), B.VAL
+		FROM A, B WHERE A.ID = B.ID
+		GROUP BY B.VAL
 	\end{verbatim}
-
-\paragraph{Fixed Number of Distinct Attributed Per Column}
-Assume we have 32 distinct elements for every column and vary the number of rows in our table.
-	In this case we expect the encoded table matrices to have 32 columns which would give TCUDB an inherent advantage over YDB and MonetDB using traditional (e.g. sort or hash based joins) algorithms. This is exactly what we can observe in Figure \ref{fig:bench1}, although they all scale geometrically TCUDB already starts in a better position giving TCUDB an exponential advantage as the number of rows doubles. 
+	
+	\paragraph{Fixed Number of Distinct Attributed Per Column}
+	Assume we have 32 distinct elements for every column and vary the number of rows in our table.
+	In this case we expect the encoded table matrices to have 32 columns which would give TCUDB an inherent advantage over YDB and MonetDB using traditional (e.g. sort or hash based joins) algorithms. This is exactly what we can observe in Figure \ref{fig:bench1}, although they all scale geometrically TCUDB already starts in a better position, giving TCUDB an exponential advantage as the number of rows doubles. 
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.9\linewidth]{bench1}
@@ -205,10 +206,12 @@ Assume we have 32 distinct elements for every column and vary the number of rows
 		\label{fig:bench1}
 	\end{figure}
 	
-\paragraph{Fixed Number of Distinct Attributed Per Column}
-Note that in the previous case the matrix had 32 columns. If we drop this and now assume that we have a fixed number of rows, 4096 rows we can investigate how the number of distinct values per column influences TCUDB's runtime. Results can be seen in Figure \ref{fig:bench2}. Figure \ref{fig:bench2} shows as expected that the runtime for our tensor based processing increases linearly with $\Omega$(\#rows) as the matrix representing a table needs as many columns as there are individual attributes in a certain table column. Furthermore, we also witness that MonetDB gets faster as the number of distinct elements grows and even surpases TCUDB at a certain point. We conjecture that this stems from the individual hash buckets in the hash-based join getting smaller as the number of distinct elements increases.
-
-		\begin{figure}
+	\paragraph{Fixed Number of Distinct Attributed Per Column}
+	Note that in the previous case the matrix had 32 columns. If we drop this and now assume that we have a fixed number of rows, 4096 rows, we can investigate how the number of distinct values per column influences TCUDB's runtime. Results can be seen in Figure \ref{fig:bench2}. Figure \ref{fig:bench2} shows, as expected, that the runtime for our tensor based processing increases linearly with $\Omega$(\#rows) as the matrix representing a table needs as many columns as there are individual attributes in a certain table column. Furthermore, we also witness that MonetDB gets faster as the number of distinct elements grows and even surpasses TCUDB at a certain point. We conjecture that this stems from the individual hash buckets in the hash-based join getting smaller as the number of distinct elements increases.
+	
+	All in all, the synthetic benchmarks suggest that performance seems to be highly dependent on the use-case.
+	
+	\begin{figure}
 		\centering
 		\includegraphics[width=0.9\linewidth]{bench2}
 		\caption{Relative execution time with 4096 records and various distinct values in target attribute. Figure and caption from \cite{hu2021tcudb}.}
@@ -216,33 +219,33 @@ Note that in the previous case the matrix had 32 columns. If we drop this and no
 	\end{figure}
 	
 	\subsection{Star Schema Benchmark}
-	The star schema benchmark \cite{o2009star} is an adaption of the popular TPC-H benchmark \cite{specification1993tpc} which models data warehousing tasks. Figure \ref{fig:bench4} shows the relative execution times on some reference queries on TCUDB again compared to YDB and MonetDB.
-		\begin{figure}
+	The star schema benchmark \cite{o2009star} is an adaption of the popular TPC-H benchmark \cite{specification1993tpc} which models data \allowbreak warehousing tasks. Figure \ref{fig:bench4} shows the relative execution times on some reference queries on TCUDB again compared to YDB and MonetDB.
+	\begin{figure}
 		\centering
 		\includegraphics[width=0.9\linewidth]{bench4}
 		\caption{The relative runtime of star schema benchmark on TCUDB compared to MonetDB and YDB. Figure and caption from \cite{hu2021tcudb}.}
 		\label{fig:bench4}
 	\end{figure}
-	Although, the presented figure seems competitive with TCUDB providing the fastest runtimes it strikes us as odd that the autors of the TCUDB paper did not use the original TPC-H benchmark \cite{specification1993tpc} benchmark which greatly hinders comparing it to other solutions such as TQP.
+	Although, the presented figure seems competitive with TCUDB providing the fastest runtimes it strikes us as odd that the authors of the TCUDB paper did not use the original TPC-H benchmark \cite{specification1993tpc} which greatly hinders comparing it to other solutions such as TQP.
 	
 	
 	\section{Shortcomings}
 	
-	Due to the chosen benchmarks it is hard to draw a definite conclusion for TCUDB's performance. MonetDB has been released about 20 years ago - it strikes us as surprising that newer analytics databases such as VectorWise were not used in the comparison.
+	Due to the chosen benchmarks, it is hard to draw a definite conclusion for TCUDB's performance. MonetDB has been released about 20 years ago - it strikes us as surprising that newer analytics databases such as VectorWise were not used in the comparison.
 	
 	Furthermore, the choice of the Star Schema benchmark also does not aid comparability. Most papers presenting data warehousing or data analytics frameworks, include the TQP paper, choose to benchmark on the TPC-H \cite{specification1993tpc} reference dataset.
 	
-	In addition, as there are no standard deviations given on the measurements we do not know if the indicated figures are means over mutliple runs or single runs. Hence, we also do not know the variance in runtime of the presented approach. 
+	In addition, as there are no standard deviations given on the measurements, we do not know if the indicated figures are means over multiple runs or single runs. Hence, we also do not know the variance in runtime of the presented approach. 
 	
-	Last but not least, the authors present in their framework multiple tests to decide how and where a certain operator will get executed (c.f. Figure \ref{fig:pipeline}); unfortunately from the presented benchmarks (e.g. Star Schema) it is unclear wether all operators are executed on the tensor core.
+	Last but not least, multiple tests to decide how and where a certain operator will get executed (c.f. Figure \ref{fig:pipeline}) are performed in their pipeline; unfortunately, from the presented benchmarks (e.g. Star Schema) it is unclear whether all operators are executed on the tensor core. Hence, we do not know the impact of these tests on performance.
 	
 	
 	\section{Conclusion}
 	
-	The presented paper, TCUDB, provides a first novel approach on using tensor cores for database query processing. They introduce a novel framework for mapping database operators to tensor operations. Although they choice of benchmarks make comparability non-trivial they do include synthetic benchmarks showcasing the strengths as well as weaknesses of their approach - namely that the tensor size depends on the number of distinct elements of relevant columns.
+	The presented paper, TCUDB, provides a first novel approach on using tensor cores for database query processing. They introduce a novel framework for mapping database operators to tensor operations. Although their choice of benchmarks make comparability non-trivial, they do include synthetic benchmarks showcasing the strengths as well as weaknesses of their approach - namely that the tensor size depends on the number of distinct elements of relevant columns. Performance seems to be highly dependent on the use case and although seems promising, more detailed data would be needed for a definite conclusion.
 	
-\bibliographystyle{plain}
-\bibliography{bibliography}
+	\bibliographystyle{plain}
+	\bibliography{bibliography}
 	
-
+	
 \end{document}
