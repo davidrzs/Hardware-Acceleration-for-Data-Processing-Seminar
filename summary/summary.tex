@@ -139,7 +139,7 @@ GROUP BY B.VAL
 
 \paragraph{Fixed Number of Distinct Attributed Per Column}
 Assume we have 32 distinct elements for every column and vary the number of rows in our table.
-	In this case we expect the encoded table matrices to have 32 columns which would give TCUDB an inherent advantage over YDB and MonetDB. This is exactly what we can observe in Figure \ref{fig:bench1}, although they all scale geometrically TCUDB already starts in a better position giving TCUDB an exponential advantage as the number of rows doubles. 
+	In this case we expect the encoded table matrices to have 32 columns which would give TCUDB an inherent advantage over YDB and MonetDB using traditional (e.g. sort or hash based joins) algorithms. This is exactly what we can observe in Figure \ref{fig:bench1}, although they all scale geometrically TCUDB already starts in a better position giving TCUDB an exponential advantage as the number of rows doubles. 
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.9\linewidth]{bench1}
@@ -170,28 +170,18 @@ Note that in the previous case the matrix had 32 columns. If we drop this and no
 	
 	\section{Shortcomings}
 	
-	The perceived shortcomings can be divided into two categories
+	Due to the chosen benchmarks it is hard to draw a definite conclusion for TCUDB's performance. MonetDB has been released about 20 years ago - it strikes us as surprising that newer analytics databases such as VectorWise were not used in the comparison.
 	
-	\paragraph{Methodological Shortcomings}
-
-	monetDB is super old, why not compared to Vectorwise, questionable 
-
-TPC-H benchmark like others
-
-TQP actualy uses tensor?? uses underlying
-
-clearly inefficient? 
-
-how many runs, average?
+	Furthermore, the choice of the Star Schema benchmark also does not aid comparability. Most papers presenting data warehousing or data analytics frameworks, include the TQP paper, choose to benchmark on the TPC-H \cite{specification1993tpc} reference dataset.
 	
-	\paragraph{Theoretical Shortcomings}
+	In addition, as there are no standard deviations given on the measurements we do not know if the indicated figures are means over mutliple runs or single runs. Hence, we also do not know the variance in runtime of the presented approach. 
 	
-
+	Last but not least, the authors present in their framework multiple tests to decide how and where a certain operator will get executed (c.f. Figure \ref{fig:pipeline}); unfortunately from the presented benchmarks (e.g. Star Schema) it is unclear wether all operators are executed on the tensor core.
 	
 	
 	\section{Conclusion}
 	
-	The presented paper, TCUDB, provides a first novel approach on using tensor cores for database query processing. 
+	The presented paper, TCUDB, provides a first novel approach on using tensor cores for database query processing. They introduce a novel framework for mapping database operators to tensor operations. Although they choice of benchmarks make comparability non-trivial they do include synthetic benchmarks showcasing the strengths as well as weaknesses of their approach - namely that the tensor size depends on the number of distinct elements of relevant columns.
 	
 \bibliographystyle{plain}
 \bibliography{bibliography}
