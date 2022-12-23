@@ -58,7 +58,7 @@ The introduction of Tensor Cores for NVIDIA GPUs has resulted significant speed 
 	\subsection{The Tensor Abstraction}
 	Databases inherently being very flexible in the data they represent. Matrices as used by the Tensor Cores on NVIDIA GPUs however have are limited to 16-bit floating point precision. A key challenge is mapping database primitives as well as operators to these tensors.
 	
-	\subsection{Mapping Database Operators to Tensor Operations}
+	\subsection{Mapping Database Operators to Tensor Operations} \label{sec:map}
 	
 	The paper \cite{hu2021tcudb} treats this transformation rather theoretical; instead of a full theoretical treatment we follow an example driven presentation here.
 	
@@ -68,16 +68,20 @@ The introduction of Tensor Cores for NVIDIA GPUs has resulted significant speed 
 	
 	Running computations on tensor cores does not come without cost, from data movement and transformation over to precision constraints, present challenges for a competitive database system. In TCUDB the authors acknowledge these limitations of tensor core based processing and present a workflow as depicted in Figure \ref{fig:pipeline}.
 
-	First the query is analyzed \Circled{1} and it is pattern matched whether it contains operators which can be accelerated using the presented approach. Whenever this or one of the following test fails TCUDB resorts to standard processing not using tensor cores. In \Circled{2} TCUDB checks wether the data as well as results will fit into the limited precision, to help this analysis TCUDB stores minimum, maximum and mean values for any table columns.
+	First the query is analyzed \Circled{1} and it is pattern matched whether it contains operators which can be accelerated using the presented approach. Whenever this or one of the following test fails, TCUDB resorts to standard processing not using tensor cores. In \Circled{2} TCUDB checks wether the data as well as results will fit into the limited precision. To perform this analysis TCUDB stores minimum, maximum and mean values for any table columns.
 	
-	As the presented transformation results in sparse matrices if there are many TODO TCUDB decides in \Circled{3} if a sparse or dense matrix multiplication should be used. As GPU memory is limited TCUDB also needs to ensure that \Circled{4} TODO
+	As the presented transformation results in sparse matrices if there are many distinct entries in a table column TCUDB decides in \Circled{3} if a sparse or dense matrix multiplication should be used. As GPU memory is limited TCUDB also needs to ensure that \Circled{4} the desired operation fits into GPU memory.
 	
-	\begin{figure}[h]
+	In order to perform the presented tensor operations in Section \ref{sec:map} we need to transform the data which comes at a cost - if the transformation cost outweighs the tensor core benefit \Circled{5} we resort to traditional processing. Last but not least, assuming we do use tensor cores we must decide \Circled{6} wether to transform the data on the GPU or CPU.
+	
+	\begin{figure}
 		\centering
 		\includegraphics[width=0.9\linewidth]{pipeline}
 		\caption{The workflow of the TCUDB query optimizer. Figure from \cite{hu2021tcudb}.} 
 		\label{fig:pipeline}
 	\end{figure}
+	
+	We note that many of these steps require some thresholds to be set. To overcome this, TCUDB performs a sampling process during which it runs predetermined queries and analyzes its runtimes in order to find these thresholds.
 	
 	\section{Comparison to Related Work} \label{sec:rel_work}
 	As tensor processors are quite a new development there is little other literature to compare the "Accelerating Database with Tensor Processors" paper to. 
@@ -122,7 +126,7 @@ The introduction of Tensor Cores for NVIDIA GPUs has resulted significant speed 
 	TCUDB presents one of the first methods for using Tensors Cores in database workloads and presents novel approaches for modeling query operators as matrix multiplications, whereas related work focuses on using established algorithms (sort-based joins etc.) on CUDA \cite{yuan2013yin} or Tensor Cores \cite{he2022query}. Although TQP provides a different approach on using tensor cores 
 	
 	\section{Performance Evaluation} \label{sec:perf_eval}
-	
+	In this section we will comment on the presented performance evaluations.
 
 	\subsection{Synthetic Benchmarks}
 	
@@ -154,46 +158,40 @@ Note that in the previous case the matrix had 32 columns. If we drop this and no
 	\end{figure}
 	
 	\subsection{Star Schema Benchmark}
-	
-	\subsection{PageRank Benchmark}
-	
-	
-	very expected
-	
-	cannot compare to the He paper.
-	
-	
-
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.9\linewidth]{bench3}
-		\caption{The relative latency of the core join and aggregation operation when running PageRank. Figure and caption from \cite{hu2021tcudb}.}
-		\label{fig:bench3}
-	\end{figure}
-	
-	
-	\begin{figure}
+	The star schema benchmark \cite{o2009star} is an adaption of the popular TPC-H benchmark \cite{specification1993tpc} which models data warehousing tasks. Figure \ref{fig:bench4} shows the relative execution times on some reference queries on TCUDB again compared to YDB and MonetDB.
+		\begin{figure}
 		\centering
 		\includegraphics[width=0.9\linewidth]{bench4}
-		\caption{The relative runtime of star  TODO schema benchmark on TCUDB compared to MonetDB and YDB running the same query as the baseline with scaling factor 1.}
+		\caption{The relative runtime of star schema benchmark on TCUDB compared to MonetDB and YDB. Figure and caption from \cite{hu2021tcudb}.}
 		\label{fig:bench4}
 	\end{figure}
+	Although, the presented figure seems competitive with TCUDB providing the fastest runtimes it strikes us as odd that the autors of the TCUDB paper did not use the original TPC-H benchmark \cite{specification1993tpc} benchmark which greatly hinders comparing it to other solutions such as TQP.
 	
 	
 	\section{Shortcomings}
 	
+	The perceived shortcomings can be divided into two categories
+	
+	\paragraph{Methodological Shortcomings}
+
 	monetDB is super old, why not compared to Vectorwise, questionable 
+
+TPC-H benchmark like others
+
+TQP actualy uses tensor?? uses underlying
+
+clearly inefficient? 
+
+how many runs, average?
 	
-	TPC-H benchmark like others
+	\paragraph{Theoretical Shortcomings}
 	
-	TQP actualy uses tensor?? uses underlying
-	
-	clearly inefficient? 
-	
-	how many runs, average?
+
 	
 	
 	\section{Conclusion}
+	
+	The presented paper, TCUDB, provides a first novel approach on using tensor cores for database query processing. 
 	
 \bibliographystyle{plain}
 \bibliography{bibliography}
